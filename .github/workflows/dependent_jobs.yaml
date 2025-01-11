@@ -1,0 +1,17 @@
+name: Dependent Jobs Testing
+on: [push]
+jobs:
+  setup: 
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "running Setup"
+  build: 
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "running build after setup"
+  test: 
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "running test after build"
