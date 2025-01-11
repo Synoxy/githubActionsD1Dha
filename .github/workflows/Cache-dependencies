@@ -1,0 +1,37 @@
+jobs:
+  example-job:
+    steps:
+      - name: Cache node modules
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+
+1. Action Used: actions/cache@v3
+The configuration uses the actions/cache action, which is a built-in GitHub Action designed to cache files and directories between workflow runs.
+2. Cache Key:
+The key for the cache is defined as ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}.
+runner.os is the operating system of the runner (e.g., ubuntu-latest, windows-latest).
+cache-name is a custom environment variable (cache-node-modules) that can be used for descriptive purposes.
+hashFiles('**/package-lock.json') generates a hash based on the contents of all package-lock.json files in the repository. 
+This ensures that if the dependencies (e.g., in package-lock.json) change, the cache key will change, forcing the cache to be refreshed.
+3. Cache Path:
+The path specified is ~/.npm, which points to the directory where Node.js stores its npm modules locally (i.e., the cache for node modules). 
+This means the cached data will include the installed npm modules that were previously saved.
+4. Restore Keys:
+restore-keys is an optional list of cache keys to try when looking for an existing cache. If the exact cache key is not found, 
+GitHub Actions will attempt to restore from keys with a common prefix. In this case, the restore key is defined as ${{ runner.os }}-build-${{ env.cache-name }}-, 
+which allows matching any cache with the same prefix, but not necessarily the same hash of package-lock.json. This helps recover some cached data even if the 
+dependencies have changed slightly.
+Workflow:
+Cache Lookup: When the workflow runs, it checks if a cache exists for the given key 
+(${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}).
+If a matching cache is found, it is restored, and the cached npm modules are available.
+If no cache is found, npm dependencies will need to be reinstalled, and a new cache will be created after the npm install step completes.
+Cache Creation: After installing the npm dependencies, the cache is saved with the computed key for future use.
+This caching mechanism helps reduce the time spent reinstalling dependencies on each run of the workflow, especially when the dependencies haven’t changed.
